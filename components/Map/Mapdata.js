@@ -21,50 +21,48 @@ const Mapdata = ({ GeoJsonData }) => {
       );
 
       L.tileLayer("http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", {
-        maxZoom: 20,
+        maxZoom: 17,
         subdomains: ["mt0", "mt1", "mt2", "mt3"],
       }).addTo(mapRef.current);
     }
 
     if (!tileLayerRef.current && tileLayerVisible) {
-      // if (!tileLayerRef.current) {
+      const bounds = [
+        [0, 73.12],
+        [73.12, 0],
+      ];
       tileLayerRef.current = L.tileLayer(
         "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
         {
           maxZoom: 17,
           attribution:
             'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+          opacity: tileOpacity,
+          bounds: bounds,
         }
       ).addTo(mapRef.current);
-      // }
-    } else {
-      if (tileLayerRef.current) {
-        mapRef.current.removeLayer(tileLayerRef.current);
-        tileLayerRef.current = null;
-      }
+    } else if (tileLayerRef.current && !tileLayerVisible) {
+      mapRef.current.removeLayer(tileLayerRef.current);
+      tileLayerRef.current = null;
     }
 
     if (!geoJsonLayerRef.current && geoJsonLayerVisible) {
-      // if (!geoJsonLayerRef.current) {
+      const bounds = [
+        [73.12, 0],
+        [0, 73.12],
+      ];
       geoJsonLayerRef.current = L.geoJSON(GeoJsonData, {
         style: {
-          fillColor: "transparent",
+          fillColor: "yellow",
           fillOpacity: geoJsonOpacity,
           color: "green",
-          weight: 5,
-        },
-        onEachFeature: function (feature, layer) {
-          if (feature.properties && feature.properties.description) {
-            layer.bindPopup(feature.properties.description);
-          }
+          weight: 3,
+          bounds: bounds,
         },
       }).addTo(mapRef.current);
-      // }
-    } else {
-      if (geoJsonLayerRef.current) {
-        mapRef.current.removeLayer(geoJsonLayerRef.current);
-        geoJsonLayerRef.current = null;
-      }
+    } else if (geoJsonLayerRef.current && !geoJsonLayerVisible) {
+      mapRef.current.removeLayer(geoJsonLayerRef.current);
+      geoJsonLayerRef.current = null;
     }
   }, [
     tileLayerVisible,
@@ -103,25 +101,24 @@ const Mapdata = ({ GeoJsonData }) => {
     setGeoJsonLayerVisible(false);
   };
 
-  // console.log(GeoJsonData);
+  console.log(GeoJsonData);
 
   return (
     <div className="relative min-h-screen">
       <div ref={mapContainerRef} className="absolute inset-0 z-10" />
       <div className="absolute top-4 bg-white right-4 z-50 p-4">
         <div>
-          <div className="mb-2">
-            <input
-              type="checkbox"
-              id="tileLayer"
-              className="border-black border mr-2"
-              checked={tileLayerVisible}
-              onChange={handleTileLayerChange}
-            />
-            <label htmlFor="tileLayer" className="text-black">
-              Tile layer
-            </label>
-          </div>
+          <input
+            type="checkbox"
+            id="tileLayer"
+            className="border-black border mr-2"
+            checked={tileLayerVisible}
+            onChange={handleTileLayerChange}
+          />
+          <label htmlFor="tileLayer" className="text-black">
+            Tile layer
+          </label>
+          <br />
           {tileLayerVisible && (
             <input
               type="range"
@@ -135,18 +132,17 @@ const Mapdata = ({ GeoJsonData }) => {
           )}
         </div>
         <div>
-          <div className="mb-2">
-            <input
-              type="checkbox"
-              id="geoJsonLayer"
-              className="border-black border mr-2"
-              checked={geoJsonLayerVisible}
-              onChange={handleGeoJsonLayerChange}
-            />
-            <label htmlFor="geoJsonLayer" className="text-black">
-              Geojson layer
-            </label>
-          </div>
+          <input
+            type="checkbox"
+            id="geoJsonLayer"
+            className="border-black border mr-2"
+            checked={geoJsonLayerVisible}
+            onChange={handleGeoJsonLayerChange}
+          />
+          <label htmlFor="geoJsonLayer" className="text-black">
+            Geojson layer
+          </label>
+          <br />
           {geoJsonLayerVisible && (
             <input
               type="range"

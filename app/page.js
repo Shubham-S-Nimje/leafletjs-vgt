@@ -1,5 +1,8 @@
 import { promises as fs } from "fs";
-import Mapdata from "@/components/Map/Mapdata";
+import dynamic from "next/dynamic";
+const Mapdata = dynamic(() => import("@/components/Map/Mapdata"), {
+  ssr: false,
+});
 
 export default async function Home() {
   const file = await fs.readFile(
