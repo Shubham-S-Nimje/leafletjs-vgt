@@ -34,6 +34,16 @@ const Mapdata = ({ GeoJsonData }) => {
     }
   );
 
+  const ProvidedGeoJsonLayer = L.geoJSON(GeoJsonData, {
+    style: {
+      fillColor: "yellow",
+      fillOpacity: geoJsonOpacity,
+      color: "green",
+      weight: 3,
+      bounds: bounds,
+    },
+  });
+
   useEffect(() => {
     if (!mapRef.current) {
       mapRef.current = L.map(mapContainerRef.current).setView(
@@ -45,9 +55,13 @@ const Mapdata = ({ GeoJsonData }) => {
 
       var baseLayers = {
         OpenStreetMap: OSM,
-        "Provided TileLayer": ProvidedTileLayer,
       };
-      L.control.layers(baseLayers).addTo(mapRef.current);
+
+      var overlays = {
+        "Provided TileLayer": ProvidedTileLayer,
+        "Provided GeoJsonLayer": ProvidedGeoJsonLayer,
+      };
+      L.control.layers(baseLayers, overlays).addTo(mapRef.current);
     }
 
     if (!tileLayerRef.current && tileLayerVisible) {
@@ -58,15 +72,7 @@ const Mapdata = ({ GeoJsonData }) => {
     }
 
     if (!geoJsonLayerRef.current && geoJsonLayerVisible) {
-      geoJsonLayerRef.current = L.geoJSON(GeoJsonData, {
-        style: {
-          fillColor: "yellow",
-          fillOpacity: geoJsonOpacity,
-          color: "green",
-          weight: 3,
-          bounds: bounds,
-        },
-      }).addTo(mapRef.current);
+      geoJsonLayerRef.current = ProvidedGeoJsonLayer.addTo(mapRef.current);
     } else if (geoJsonLayerRef.current && !geoJsonLayerVisible) {
       mapRef.current.removeLayer(geoJsonLayerRef.current);
       geoJsonLayerRef.current = null;
