@@ -13,6 +13,27 @@ const Mapdata = ({ GeoJsonData }) => {
   const [tileOpacity, setTileOpacity] = useState(0.5);
   const [geoJsonOpacity, setGeoJsonOpacity] = useState(0.5);
 
+  const bounds = [
+    [73.12, 0],
+    [0, 73.12],
+  ];
+
+  const OSM = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution:
+      '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  });
+
+  const ProvidedTileLayer = L.tileLayer(
+    "http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+    {
+      maxZoom: 17,
+      subdomains: ["mt0", "mt1", "mt2", "mt3"],
+      bounds: bounds,
+      opacity: tileOpacity,
+    }
+  );
+
   useEffect(() => {
     if (!mapRef.current) {
       mapRef.current = L.map(mapContainerRef.current).setView(
@@ -20,37 +41,23 @@ const Mapdata = ({ GeoJsonData }) => {
         12
       );
 
-      L.tileLayer("http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", {
-        maxZoom: 17,
-        subdomains: ["mt0", "mt1", "mt2", "mt3"],
-      }).addTo(mapRef.current);
+      OSM.addTo(mapRef.current);
+
+      var baseLayers = {
+        OpenStreetMap: OSM,
+        "Provided TileLayer": ProvidedTileLayer,
+      };
+      L.control.layers(baseLayers).addTo(mapRef.current);
     }
 
     if (!tileLayerRef.current && tileLayerVisible) {
-      const bounds = [
-        [0, 73.12],
-        [73.12, 0],
-      ];
-      tileLayerRef.current = L.tileLayer(
-        "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-        {
-          maxZoom: 17,
-          attribution:
-            'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
-          opacity: tileOpacity,
-          bounds: bounds,
-        }
-      ).addTo(mapRef.current);
+      tileLayerRef.current = ProvidedTileLayer.addTo(mapRef.current);
     } else if (tileLayerRef.current && !tileLayerVisible) {
       mapRef.current.removeLayer(tileLayerRef.current);
       tileLayerRef.current = null;
     }
 
     if (!geoJsonLayerRef.current && geoJsonLayerVisible) {
-      const bounds = [
-        [73.12, 0],
-        [0, 73.12],
-      ];
       geoJsonLayerRef.current = L.geoJSON(GeoJsonData, {
         style: {
           fillColor: "yellow",
@@ -101,13 +108,13 @@ const Mapdata = ({ GeoJsonData }) => {
     setGeoJsonLayerVisible(false);
   };
 
-  console.log(GeoJsonData);
+  // console.log(GeoJsonData);
 
   return (
     <div className="relative min-h-screen">
       <div ref={mapContainerRef} className="absolute inset-0 z-10" />
-      <div className="absolute top-4 bg-white right-4 z-50 p-4">
-        <div>
+      <div className="absolute top-24 bg-white right-2 z-50 p-4 flex flex-col gap-2 border-2 border-gray-400 rounded">
+        <div className="">
           <input
             type="checkbox"
             id="tileLayer"
@@ -120,15 +127,21 @@ const Mapdata = ({ GeoJsonData }) => {
           </label>
           <br />
           {tileLayerVisible && (
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.1"
-              value={tileOpacity}
-              onChange={handleTileOpacityChange}
-              className="w-32 h-6 bg-gray-200 rounded-md shadow-sm focus:outline-none focus:bg-white"
-            />
+            <div>
+              <label htmlFor="tileOpacity" className="text-black mr-2">
+                Opacity:
+              </label>
+              <input
+                type="range"
+                id="tileOpacity"
+                min="0"
+                max="1"
+                step="0.1"
+                value={tileOpacity}
+                onChange={handleTileOpacityChange}
+                className="w-32 h-6 bg-gray-200 rounded-md shadow-sm focus:outline-none focus:bg-white"
+              />
+            </div>
           )}
         </div>
         <div>
@@ -144,18 +157,27 @@ const Mapdata = ({ GeoJsonData }) => {
           </label>
           <br />
           {geoJsonLayerVisible && (
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.1"
-              value={geoJsonOpacity}
-              onChange={handleGeoJsonOpacityChange}
-              className="w-32 h-6 bg-gray-200 rounded-md shadow-sm focus:outline-none focus:bg-white"
-            />
+            <div>
+              <label htmlFor="geoJsonOpacity" className="text-black mr-2">
+                Opacity:
+              </label>
+              <input
+                type="range"
+                id="geoJsonOpacity"
+                min="0"
+                max="1"
+                step="0.1"
+                value={geoJsonOpacity}
+                onChange={handleGeoJsonOpacityChange}
+                className="w-32 h-6 bg-gray-200 rounded-md shadow-sm focus:outline-none focus:bg-white"
+              />
+            </div>
           )}
         </div>
-        <button className="mb-2 border" onClick={handleRemoveAll}>
+        <button
+          className="mb-2 border rounded bg-red-800 text-white p-1"
+          onClick={handleRemoveAll}
+        >
           Remove All
         </button>
       </div>
